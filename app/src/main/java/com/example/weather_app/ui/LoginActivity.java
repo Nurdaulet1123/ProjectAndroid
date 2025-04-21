@@ -1,14 +1,14 @@
 package com.example.weather_app.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.weather_app.api.MockApiService;
 import com.example.weather_app.R;
+import com.example.weather_app.api.MockApiService;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText usernameEditText;
@@ -33,6 +33,12 @@ public class LoginActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString();
 
         if (apiService.authenticateUser(username, password)) {
+            // Сохраняем имя пользователя в SharedPreferences
+            SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("username", username);
+            editor.apply();
+
             // Переход на MainActivity после успешного логина
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
