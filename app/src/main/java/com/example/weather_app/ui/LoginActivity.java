@@ -25,6 +25,15 @@ public class LoginActivity extends AppCompatActivity {
 
         usernameEditText = findViewById(R.id.username_edit_text);
         passwordEditText = findViewById(R.id.password_edit_text);
+
+        // Проверка, если уже есть логин в SharedPreferences, сразу перенаправляем в MainActivity
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        if (prefs.contains("username")) {
+            // Переход на профиль (если уже логин)
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     // Метод для обработки нажатия кнопки логина
