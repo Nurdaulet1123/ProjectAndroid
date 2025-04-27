@@ -3,11 +3,13 @@ package com.example.weather_app.ui;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.weather_app.R;
 import com.example.weather_app.api.RetrofitClient;
 import com.example.weather_app.api.WeatherApiService;
@@ -16,11 +18,11 @@ import com.example.weather_app.api.WeatherResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 public class WeatherActivity extends AppCompatActivity {
 
-    private TextView weatherInfo;
+    private TextView temperatureText, weatherDescription, humidityText, windText, locationText;
+    private ImageView weatherIcon;
     private EditText cityInput;
     private Button checkWeatherButton;
 
@@ -29,9 +31,15 @@ public class WeatherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
 
-        weatherInfo = findViewById(R.id.weather_info);
-        cityInput = findViewById(R.id.city_input); // Поле для ввода города
+        // Инициализация View элементов
+        cityInput = findViewById(R.id.city_input);
         checkWeatherButton = findViewById(R.id.check_weather_button);
+        temperatureText = findViewById(R.id.temperature_text);
+        weatherDescription = findViewById(R.id.weather_description);
+        humidityText = findViewById(R.id.humidity_text);
+        windText = findViewById(R.id.wind_text);
+        locationText = findViewById(R.id.location_text);
+        weatherIcon = findViewById(R.id.weather_icon);
 
         checkWeatherButton.setOnClickListener(v -> {
             String city = cityInput.getText().toString().trim();
@@ -44,41 +52,60 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     private void getWeatherDataForCity(String city) {
-        // Создаем Retrofit объект и API-сервис
-        Retrofit retrofit = RetrofitClient.getRetrofitInstance();
-        WeatherApiService apiService = retrofit.create(WeatherApiService.class);
-        String apiKey = "659a8357e1f169c0936d0f47c0d1c92f"; // Вставьте свой ключ от OpenWeatherMap
-        String units = "metric"; // Цель: температура в Цельсиях
-        String language = "ru"; // Язык: русский
+        WeatherApiService apiService = RetrofitClient.getRetrofitInstance().create(WeatherApiService.class);
+        String apiKey = "659a8357e1f169c0936d0f47c0d1c92f";
+        String units = "metric";
+        String language = "ru";
 
-        // Выполняем запрос для указанного города
         Call<WeatherResponse> call = apiService.getWeather(city, apiKey, units, language);
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                if (response.isSuccessful()) {
-                    WeatherResponse weatherResponse = response.body();
-                    if (weatherResponse != null) {
-                        String cityName = weatherResponse.getName();
-                        String description = weatherResponse.getWeather().get(0).getDescription();
-                        double temp = weatherResponse.getMain().getTemp();
-
-                        // Отображаем информацию о погоде для выбранного города
-                        String weatherDetails = "Город: " + cityName
-                                + "\nТемпература: " + temp + "°C"
-                                + "\nОписание: " + description;
-
-                        weatherInfo.setText(weatherDetails);
-                    }
+                if (response.isSuccessful() && response.body() != null) {
+                    WeatherResponse weather = response.body();
+                    updateUI(weather);
                 } else {
                     Toast.makeText(WeatherActivity.this, "Не удалось получить данные для города: " + city, Toast.LENGTH_SHORT).show();
+                    resetUI();
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
                 Toast.makeText(WeatherActivity.this, "Ошибка: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                resetUI();
             }
         });
+    }
+
+    private void updateUI(WeatherResponse weather) {
+        if (weather.getWeather() == null || weather.getWeather().isEmpty()) {
+            resetUI();
+            return;
+        }
+
+        locationText.setText(weather.getName());
+        temperatureText.setText(String.format("%.1f°C", weather.getMain().getTemp()));
+        weatherDescription.setText(weather.getWeather().get(0).getDescription());
+        humidityText.setText(String.format("Влажность: %d%%", weather.getMain().getHumidity()));
+
+        if (weather.getWind() != null) {
+            windText.setText(String.format("Ветер: %.1f м/с", weather.getWind().getSpeed()));
+        }
+
+        // Загрузка иконки погоды
+        String iconUrl = "https://openweathermap.org/img/wn/" + weather.getWeather().get(0).getIcon() + "@2x.png";
+        Glide.with(this)
+                .load(iconUrl)
+                .into(weatherIcon);
+    }
+
+    private void resetUI() {
+        locationText.setText("--");
+        temperatureText.setText("--°C");
+        weatherDescription.setText("--");
+        humidityText.setText("Влажность: --%");
+        windText.setText("Ветер: -- м/с");
+        weatherIcon.setImageResource(R.drawable.ic_weather_default);
     }
 }

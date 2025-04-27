@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import com.example.weather_app.R;
+import com.example.weather_app.ui.LoginActivity;
 
 public class ProfileFragment extends Fragment {
 
@@ -18,40 +19,42 @@ public class ProfileFragment extends Fragment {
     private TextView usernameTextView;
     private Button logoutButton;
 
-    public ProfileFragment() {
-        super(R.layout.fragment_profile);
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_profile, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        welcomeTextView = root.findViewById(R.id.profile_welcome);
-        usernameTextView = root.findViewById(R.id.profile_username);
-        logoutButton = root.findViewById(R.id.logout_button);
+        welcomeTextView = rootView.findViewById(R.id.profile_welcome);
+        usernameTextView = rootView.findViewById(R.id.profile_username);
+        logoutButton = rootView.findViewById(R.id.logout_button);
 
-        // Получаем имя пользователя из SharedPreferences
+        // Получаем данные пользователя
         SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-        String username = prefs.getString("username", "неизвестен");
+        String username = prefs.getString("username", "Гость");
+        String email = prefs.getString("email", "");
 
-        // Отображаем приветствие и логин
-        welcomeTextView.setText("Добро пожаловать, " + username + "!");
-        usernameTextView.setText("Логин: " + username);
+        // Форматируем приветствие
+        String welcomeText = String.format("Добро пожаловать,\n%s!", username);
+        welcomeTextView.setText(welcomeText);
 
-        // Обработчик кнопки выхода
-        logoutButton.setOnClickListener(v -> {
-            // Очищаем SharedPreferences, чтобы удалить логин
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.remove("username");
-            editor.apply();
+        String usernameText = String.format("Логин: %s\nEmail: %s", username, email);
+        usernameTextView.setText(usernameText);
 
-            // Переход к экрану логина
-            Intent intent = new Intent(getActivity(), LoginActivity.class);
-            startActivity(intent);
-            requireActivity().finish();  // Закрываем текущую активность
-        });
+        logoutButton.setOnClickListener(v -> logoutUser());
 
-        return root;
+        return rootView;
+    }
+
+    private void logoutUser() {
+        SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.apply();
+
+        // Переход на экран входа с очисткой стека активностей
+        Intent intent = new Intent(getActivity(), LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        requireActivity().finish();
     }
 }
