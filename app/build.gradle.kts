@@ -60,5 +60,6 @@ dependencies {
 
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.2.1")
+    implementation ("com.google.android.material:material:1.10.0")
 
 }

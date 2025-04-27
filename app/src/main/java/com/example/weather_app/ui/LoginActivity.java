@@ -1,12 +1,12 @@
 package com.example.weather_app.ui;
-
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.weather_app.R;
 import com.example.weather_app.api.MockApiService;
 
@@ -20,35 +20,23 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Инициализация apiService с контекстом текущей Activity
         apiService = new MockApiService(this);
 
         usernameEditText = findViewById(R.id.username_edit_text);
         passwordEditText = findViewById(R.id.password_edit_text);
+        Button loginButton = findViewById(R.id.login_button);
+        Button registerButton = findViewById(R.id.register_button);  // Добавляем кнопку регистрации
 
-        // Проверка, если уже есть логин в SharedPreferences, сразу перенаправляем в MainActivity
-        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        if (prefs.contains("username")) {
-            // Переход на профиль (если уже логин)
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
+        loginButton.setOnClickListener(v -> onLoginClicked());
+        registerButton.setOnClickListener(v -> onRegisterClicked());  // Обработчик для кнопки регистрации
     }
 
-    // Метод для обработки нажатия кнопки логина
-    public void onLoginClicked(View view) {
+    private void onLoginClicked() {
         String username = usernameEditText.getText().toString();
         String password = passwordEditText.getText().toString();
 
         if (apiService.authenticateUser(username, password)) {
-            // Сохраняем имя пользователя в SharedPreferences
-            SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("username", username);
-            editor.apply();
-
-            // Переход на MainActivity после успешного логина
+            Toast.makeText(this, "Успешный вход!", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
@@ -57,8 +45,8 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    // Метод для перехода на экран регистрации
-    public void onRegisterClicked(View view) {
+    private void onRegisterClicked() {
+        // Переходим на экран регистрации
         Intent intent = new Intent(this, RegisterActivity.class);
         startActivity(intent);
     }
