@@ -36,6 +36,12 @@ public class LoginActivity extends AppCompatActivity {
         String password = passwordEditText.getText().toString();
 
         if (apiService.authenticateUser(username, password)) {
+            // Сохраняем логин пользователя в SharedPreferences
+            getSharedPreferences("UserPrefs", MODE_PRIVATE)
+                    .edit()
+                    .putString("username", username)
+                    .apply();
+
             Toast.makeText(this, "Успешный вход!", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);

@@ -9,14 +9,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
 import androidx.fragment.app.Fragment;
+
 import com.example.weather_app.R;
 import com.example.weather_app.ui.LoginActivity;
 
 public class ProfileFragment extends Fragment {
 
     private TextView welcomeTextView;
-    private TextView usernameTextView;
     private Button logoutButton;
 
     @Override
@@ -25,20 +26,15 @@ public class ProfileFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
 
         welcomeTextView = rootView.findViewById(R.id.profile_welcome);
-        usernameTextView = rootView.findViewById(R.id.profile_username);
         logoutButton = rootView.findViewById(R.id.logout_button);
 
         // Получаем данные пользователя
         SharedPreferences prefs = requireActivity().getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         String username = prefs.getString("username", "Гость");
-        String email = prefs.getString("email", "");
 
         // Форматируем приветствие
         String welcomeText = String.format("Добро пожаловать,\n%s!", username);
         welcomeTextView.setText(welcomeText);
-
-        String usernameText = String.format("Логин: %s\nEmail: %s", username, email);
-        usernameTextView.setText(usernameText);
 
         logoutButton.setOnClickListener(v -> logoutUser());
 
